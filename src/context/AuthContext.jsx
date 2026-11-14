@@ -15,11 +15,17 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Check initial session with error handling
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to get session', err);
+        setUser(null);
+        setLoading(false);
+      });
     return () => {
       // Correctly unsubscribe the auth listener
       authListener?.unsubscribe?.();
@@ -52,9 +58,9 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    // Ensure session is loaded and user state is updated via auth listener
-    const { data: sessionData } = await supabase.auth.getSession();
-    setUser(sessionData.session?.user ?? data.user);
+    // Update user from the returned session if available
+    const userFromSession = data.session?.user ?? data.user;
+    setUser(userFromSession);
     return data;
   };
 

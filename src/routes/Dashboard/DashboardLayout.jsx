@@ -17,6 +17,14 @@ const DashboardLayout = () => {
     }
   };
 
+  if (useAuth().loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-400">
+        Loading dashboard…
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100">
       {/* Sidebar */}
