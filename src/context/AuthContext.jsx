@@ -21,7 +21,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
     return () => {
-      authListener?.subscription?.unsubscribe();
+      // Correctly unsubscribe the auth listener
+      authListener?.unsubscribe?.();
     };
   }, []);
 
@@ -51,7 +52,9 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    setUser(data.user);
+    // Ensure session is loaded and user state is updated via auth listener
+    const { data: sessionData } = await supabase.auth.getSession();
+    setUser(sessionData.session?.user ?? data.user);
     return data;
   };
 
