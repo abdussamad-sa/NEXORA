@@ -17,7 +17,7 @@ export const DataProvider = ({ children }) => {
   // Helper to fetch data for the current user
   const fetchData = async () => {
     setLoading(true);
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setLoading(false);
       return;
@@ -54,9 +54,7 @@ export const DataProvider = ({ children }) => {
       }
     });
     // Also fetch once on mount if already logged in
-    if (supabase.auth.user()) {
-      fetchData();
-    }
+    fetchData();
     return () => {
       authListener?.unsubscribe();
     };
@@ -70,7 +68,7 @@ export const DataProvider = ({ children }) => {
 
   // CRUD helpers ----------------------------------------------------------
   const createProject = async (payload) => {
-    const user = supabase.auth.user();
+    const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.from('projects').insert({ ...payload, user_id: user?.id }).single();
     if (error) throw error;
     setProjects((prev) => [...prev, data]);
